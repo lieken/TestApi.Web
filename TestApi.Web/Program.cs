@@ -1,10 +1,16 @@
+using Microsoft.Extensions.Configuration;
+using TestApi.Web.Core.Helper;
 using TestApi.Web.Service.Interface;
 using TestApi.Web.Service.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddTransient<IDatabaseService, DatabaseService>();
+
+builder.Services.AddTransient(provider =>
+{
+     return new DapperHelper(builder.Configuration.GetConnectionString("localhost"));
+});
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

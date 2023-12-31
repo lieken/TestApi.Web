@@ -8,10 +8,11 @@ namespace TestApi.Web.Service.Service
     {
         private readonly DapperHelper _dapperHelper;
 
-        public DatabaseService(string sqlConnection)
+        public DatabaseService(DapperHelper dapperHelper)
         {
-            _dapperHelper = new DapperHelper(sqlConnection);
+            _dapperHelper = dapperHelper ?? throw new ArgumentNullException(nameof(dapperHelper));
         }
+
 
         public async Task<T> GetOneRecordAsync<T>(string sql, DynamicParameters parameters)
         {
