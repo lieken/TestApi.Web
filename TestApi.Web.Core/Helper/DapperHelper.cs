@@ -1,86 +1,55 @@
 ﻿using Dapper;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace TestApi.Web.Core.Helper
 {
     public class DapperHelper 
     {
-        private readonly SqlConnection _connection;
-        private readonly SqlTransaction _transaction;
+        private IDbTransaction _dbTransaction;
+        private readonly IDbConnection _dbConnection;
 
         public string? SqlConnection { get; set; }
 
-        public DapperHelper(string? sqlConnectionTemp = null)
+        public DapperHelper(string connectionString)
         {
-            SqlConnection = sqlConnectionTemp;
-            _connection = new SqlConnection(SqlConnection);
-            _connection.Open();
-            _transaction = _connection.BeginTransaction();
+            _dbConnection = new SqlConnection(connectionString);
+            _dbConnection.Open();
         }
 
-        /// <summary>
-        /// 讀取: 單項資料
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="sql"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public async Task<T> ReadOneRecordAsync<T>(string sql, DynamicParameters parameters)
+        public async Task<int> CreateAsync(string sql, object parameters, IDbTransaction transaction = null)
         {
-            var result = await _connection.QueryFirstAsync<T>(sql, parameters, _transaction);
-            return result;
+            return await _dbConnection.ExecuteAsync(sql, parameters, transaction);
         }
 
-        /// <summary>
-        /// 讀取: 多項資料
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="sql"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public async Task<IList<T>> ReadRecordsAsync<T>(string sql, DynamicParameters parameters)
+        public async Task<int> UpdateAsync(string sql, object parameters, IDbTransaction transaction = null)
         {
-            var result = await _connection.QueryAsync<T>(sql, parameters, _transaction);
+            return await _dbConnection.ExecuteAsync(sql, parameters, transaction);
+        }
+
+        public async Task<int> DeleteAsync(string sql, object parameters, IDbTransaction transaction = null)
+        {
+            return await _dbConnection.ExecuteAsync(sql, parameters, transaction);
+        }
+
+        public async Task<IList<T>> QueryAsync<T>(string sql, object parameters = null, IDbTransaction transaction = null)
+        {
+            var result = await _dbConnection.QueryAsync<T>(sql, parameters, transaction);
             return result.ToList();
         }
 
-        /// <summary>
-        /// 新增
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="sql"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public async Task<int> CreateAsync(string sql, DynamicParameters parameters)
+        public async Task<T> QueryOneAsync<T>(string sql, object parameters = null, IDbTransaction transaction = null)
         {
-            var result = await _connection.ExecuteAsync(sql, parameters, _transaction);
-            return result;
+            return await _dbConnection.QuerySingleOrDefaultAsync<T>(sql, parameters, transaction);
         }
 
         /// <summary>
-        /// 更新
+        /// 交易: 開始
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="sql"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public async Task<int> UpdateAsync(string sql, DynamicParameters parameters)
+        public IDbTransaction BeginTransaction()
         {
-            var result = await _connection.ExecuteAsync(sql, parameters, _transaction);
-            return result;
-        }
-
-        /// <summary>
-        /// 刪除
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="sql"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        public async Task<int> DeleteAsync(string sql, DynamicParameters parameters)
-        {
-            var result = await _connection.ExecuteAsync(sql, parameters, _transaction);
-            return result;
+            _dbTransaction = _dbConnection.BeginTransaction();
+            return _dbTransaction;
         }
 
         /// <summary>
@@ -88,7 +57,7 @@ namespace TestApi.Web.Core.Helper
         /// </summary>
         public void Commit()
         {
-            _transaction?.Commit();
+            _dbTransaction?.Commit();
         }
 
         /// <summary>
@@ -96,7 +65,7 @@ namespace TestApi.Web.Core.Helper
         /// </summary>
         public void Rollback()
         {
-            _transaction?.Rollback();
+            _dbTransaction?.Rollback();
         }
 
         /// <summary>
@@ -104,8 +73,8 @@ namespace TestApi.Web.Core.Helper
         /// </summary>
         public void Dispose()
         {
-            _transaction?.Dispose();
-            _connection?.Close();
+            _dbTransaction?.Dispose();
+            _dbConnection?.Dispose();
         }
     }
 }

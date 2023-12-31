@@ -5,7 +5,7 @@ using TestApi.Web.Service.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddTransient<IDatabaseService, DatabaseService>();
+builder.Services.AddScoped<IMovieService, MovieService>();
 
 builder.Services.AddTransient(provider =>
 {
