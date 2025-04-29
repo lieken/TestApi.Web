@@ -1,3 +1,5 @@
+# TestApi.Web  → 基礎.NET CORE 結構
+``` 
 TestApi.Web.sln                          → 整體解決方案 (Solution)
 │
 ├── TestApi.Web.Core                    → 核心層：放置共用工具與輔助程式
@@ -22,3 +24,4 @@ TestApi.Web.sln                          → 整體解決方案 (Solution)
 │   ├── appsettings.json               → 全域設定檔（例如連線字串）
 │   ├── appsettings.Development.json   → 開發環境設定檔
 │   └── TestApi.Web.csproj             → Web 專案檔
+```
